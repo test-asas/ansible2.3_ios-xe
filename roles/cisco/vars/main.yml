@@ -1,0 +1,9 @@
+---
+# vars file for cisco
+IF:
+  Lo_ip: 172.16.255.1 
+  Gi_ip: 172.16.0.1
+
+SNMP:
+  server_ip:  10.0.0.220
+

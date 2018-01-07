@@ -1,0 +1,67 @@
+---
+- name: 処理を開始します
+  set_fact:
+    cli:
+      host: "{{ inventory_hostname }}"  
+      authorize: yes
+      username: "{{ ansible_ssh_user }}" 
+      password: "{{ ansible_ssh_pass }}"  
+      auth_pass: "{{ enable_pass }}"      
+
+- name: 事前の状態を取得します
+  ios_command:
+    commands:
+      - show run
+      - show ip int bri
+    provider: "{{ cli }}"
+  register: before
+
+- name: 結果を保存します
+  copy: 
+    content: "{{ before }}"
+    dest: "/root/before.txt"
+  changed_when: False #no shutdownを冪等性で判断できない時用
+
+
+#- name: 事前show_run_allを実行します
+#  ios_command:
+#    commands:
+#      - show run all
+#    provider: "{{ cli }}"
+#    timeout: 60
+
+- name: 対象インターフェースを開放します
+  ios_config:
+    parents:
+      - interface gigabitEthernet2
+    lines:
+      - no shutdown
+    provider: "{{ cli }}"
+  changed_when: False #no shutdownを冪等性で判断できない時用
+
+- name: configを投入します
+  ios_config:
+    src: config.j2
+    provider: "{{ cli }}"
+
+- name: configを保存します
+  ios_config:
+    save: yes
+    provider: "{{ cli }}"
+  changed_when: False #saveは冪等性の判断できないため
+
+- name: 事後状態を取得します
+  ios_command:
+    commands:
+      - show run
+      - show ip int bri
+    provider: "{{ cli }}"
+  register: after
+
+- name: 結果を保存します
+  copy:
+    content: "{{ after }}"
+    dest: "/root/after.txt"
+  changed_when: False #no shutdownを冪等性で判断できない時よう
+
+

@@ -1,0 +1,20 @@
+hostname R1
+!
+!
+interface Loopback1
+ ip address {{ IF.Lo_ip }} 255.255.255.255
+ ip ospf 1 area 0
+ ip ospf network point-to-point
+!
+!
+interface GigabitEthernet2
+ ip address {{ IF.Gi_ip }} 255.255.255.0
+ negotiation auto
+ ip ospf 1 area 0
+!
+router ospf 1
+
+snmp-server community public RO
+snmp-server host {{ SNMP.server_ip }} public
+
+
